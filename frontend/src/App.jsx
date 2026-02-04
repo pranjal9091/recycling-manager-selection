@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Container, Title, Table, Card, Text, Badge, Group, Grid, RingProgress, Center, Loader, Paper, Stack } from '@mantine/core';
+import { Container, Title, Table, Card, Text, Badge, Group, Grid, RingProgress, Center, Loader, Paper, Stack, ActionIcon, rem } from '@mantine/core';
+import { IconShare } from '@tabler/icons-react'; 
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 
 export default function App() {
@@ -21,7 +22,6 @@ export default function App() {
 
   if (loading) return <Center h="100vh"><Loader size="xl" color="green" /></Center>;
 
-  // Data for Heatmap/BarChart (Top 10 Candidates)
   const chartData = data.slice(0, 10).map(c => ({
     name: c.name.split(' ')[0],
     score: Number(c.score).toFixed(1)
@@ -37,7 +37,6 @@ export default function App() {
             </Stack>
         </Center>
 
-        {/* SECTION 1: SKILL VISUALIZATION (HEATMAP ALTERNATIVE) */}
         <Paper withBorder p="md" radius="md" shadow="xs">
           <Title order={3} mb="lg">Top 10 Candidate Performance Heatmap</Title>
           <div style={{ width: '100%', height: 300 }}>
@@ -56,15 +55,27 @@ export default function App() {
           </div>
         </Paper>
 
-        {/* SECTION 2: TOP 3 CANDIDATE CARDS */}
         <Title order={3}>🏆 Selection Spotlight</Title>
         <Grid>
           {data.slice(0, 3).map((candidate, index) => (
             <Grid.Col key={candidate.id} span={{ base: 12, md: 4 }}>
               <Card shadow="md" padding="xl" radius="md" withBorder style={{ borderTop: `4px solid ${index === 0 ? '#FAB005' : '#40C057'}` }}>
-                <Badge variant="filled" color={index === 0 ? "yellow" : "green"} mb="sm">
-                    {index === 0 ? "Best Match" : `Rank #${index + 1}`}
-                </Badge>
+                <Group justify="space-between" mb="sm">
+                    <Badge variant="filled" color={index === 0 ? "yellow" : "green"}>
+                        {index === 0 ? "Best Match" : `Rank #${index + 1}`}
+                    </Badge>
+                    <ActionIcon 
+                      variant="subtle" 
+                      color="gray" 
+                      onClick={() => {
+                        navigator.clipboard.writeText(`Candidate: ${candidate.name}, Score: ${Number(candidate.score).toFixed(1)}`);
+                        alert('Candidate details copied!');
+                      }}
+                    >
+                      <IconShare style={{ width: rem(18), height: rem(18) }} />
+                    </ActionIcon>
+                </Group>
+                
                 <Text size="xl" fw={700}>{candidate.name}</Text>
                 <Text size="sm" c="dimmed" h={40}>{candidate.skills}</Text>
                 
@@ -87,16 +98,13 @@ export default function App() {
           ))}
         </Grid>
 
-        {/* SECTION 3: FULL RANKING TABLE */}
         <Paper withBorder radius="md">
-            <Title order={4} p="md">All Candidates (Sample Size: 40)</Title>
             <Table striped highlightOnHover>
             <Table.Thead>
                 <Table.Tr>
                 <Table.Th>Name</Table.Th>
                 <Table.Th>Experience</Table.Th>
                 <Table.Th>Avg. AI Score</Table.Th>
-                <Table.Th>Status</Table.Th>
                 </Table.Tr>
             </Table.Thead>
             <Table.Tbody>
@@ -105,11 +113,6 @@ export default function App() {
                     <Table.Td fw={500}>{c.name}</Table.Td>
                     <Table.Td>{c.experience_years} Years</Table.Td>
                     <Table.Td><Text fw={700} c="green">{Number(c.score || 0).toFixed(2)}</Text></Table.Td>
-                    <Table.Td>
-                        <Badge variant="dot" color={c.score > 8 ? "green" : "gray"}>
-                            {c.score > 8 ? "Shortlisted" : "Reviewed"}
-                        </Badge>
-                    </Table.Td>
                 </Table.Tr>
                 ))}
             </Table.Tbody>
